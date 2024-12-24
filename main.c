@@ -5,7 +5,7 @@
 
 
 int main(int argc, char* argv[]){
-
+	vector* v = newvector(10);
 	printf("========= SUCCES =========\n");
 	return 0;
 }
