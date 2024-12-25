@@ -1,70 +1,100 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
+typedef struct Node {
+    int data;
+    struct Node *next;
+    struct Node *prev;
+} Node;
 
-#define _PRE_PROCESS_PATTERN(pat, sz, arr) _build_prefix_table(pat, sz, arr)
-#define _SEARCH_TEXT(pat, txt) _perform_pattern_matching(pat, txt)
-
-static void _build_prefix_table(const char* pattern, int pat_len, int* prefix_table);
-static void _perform_pattern_matching(const char* pattern, const char* text);
-
-static void _build_prefix_table(const char* pattern, int pat_len, int* prefix_table) {
-    int length = 0;
-    prefix_table[0] = 0;
-    int iterator = 1;
-
-    while (iterator < pat_len) {
-        if (pattern[iterator] == pattern[length]) {
-            length++;
-            prefix_table[iterator] = length;
-            iterator++;
-        } else {
-            if (length != 0) {
-                length = prefix_table[length - 1];
-            } else {
-                prefix_table[iterator] = 0;
-                iterator++;
-            }
-        }
-    }
+Node* newnode(int value) {
+    Node *new_node = (Node *)malloc(sizeof(Node));
+    new_node->data = value;
+    new_node->next = NULL;
+    new_node->prev = NULL;
+    return new_node;
 }
 
-static void _perform_pattern_matching(const char* pattern, const char* text) {
-    int pat_len = strlen(pattern);
-    int text_len = strlen(text);
+void insert(Node **head_ref, int value) {
+    Node *new_node = newnode(value);
+    Node *last = *head_ref;
 
-
-    int* prefix_table = (int*)malloc(pat_len * sizeof(int));
-    _PRE_PROCESS_PATTERN(pattern, pat_len, prefix_table);
-
-    int i = 0;
-    int j = 0;
-    while (i < text_len) {
-        if (pattern[j] == text[i]) {
-            i++;
-            j++;
-        }
-
-
-        if (j == pat_len) {
-           printf("%d\n", i - j);
-             j = prefix_table[j - 1];
-        } else if (i < text_len && pattern[j] != text[i]) {
-            if (j != 0)
-                j = prefix_table[j - 1];
-            else
-                i = i + 1;
-         }
+    if (*head_ref == NULL) {
+        *head_ref = new_node;
+        new_node->next = new_node;
+        new_node->prev = new_node;
+        return;
     }
-   free(prefix_table);
+
+    while (last->next != *head_ref) {
+        last = last->next;
+    }
+
+    new_node->next = *head_ref;
+    new_node->prev = last;
+    last->next = new_node;
+    (*head_ref)->prev = new_node;
 }
 
-int main(int argc, char* argv[]) {
+void print(Node *head) {
+    Node *current = head;
+    do {
+        printf("%d ", current->data);
+        current = current->next;
+    } while (current != head);
+    printf("\n");
+}
 
-    char* search_pattern = argv[1];
-    char* target_text = argv[2];
+void swap(Node *a, Node *b) {
+    int temp = a->data;
+    a->data = b->data;
+    b->data = temp;
+}
 
-    _SEARCH_TEXT(search_pattern, target_text);
-   return 0;
+bool comp(int a, int b) {
+    if (abs(a) < abs(b))
+        return true;
+    else
+        return false;
+}
+
+void quick_sort(Node *start, Node *end) {
+    if (start == end || start->next == end) {
+        return;
+    }
+
+    Node *pivot = start;
+    Node *curr = pivot->next;
+    Node *tail = end->prev;
+
+    while (curr != tail) {
+        if (comp(curr->data, pivot->data)) {
+            swap(start->next, curr);
+            start = start->next;
+        }
+        curr = curr->next;
+    }
+
+    swap(pivot, start);
+
+    quick_sort(start, pivot);
+    quick_sort(pivot->next, end);
+}
+
+int main() {
+    Node *head = NULL;
+    int num_elements;
+    scanf("%d", &num_elements);
+    for (int i = 0; i < num_elements; i++) {
+        int value;
+        scanf("%d", &value);
+        insert(&head, value);
+    }
+
+    quick_sort(head, head->prev);
+
+    print(head);
+
+    return 0;
 }
