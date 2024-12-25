@@ -1,5 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
+
 typedef struct vec vector;
 typedef struct vec{
 	size_t size, cap;
